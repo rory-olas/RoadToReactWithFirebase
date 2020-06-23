@@ -2,13 +2,21 @@ import React from 'react';
 
 import {PasswordForgetForm} from "../PasswordForget";
 import PasswordChangeForm from "../PasswordChange";
+import {AuthUserContext, withAuthorization} from '../Session';
 
 const AccountPage = () => (
-    <div>
-        <h1>Account</h1>
-        <PasswordForgetForm/>
-        <PasswordChangeForm/>
-    </div>
+    <AuthUserContext.Consumer>
+        {authUser => (
+            <div>
+                <h1>Account: {authUser.email}</h1>
+                <PasswordForgetForm/>
+                <PasswordChangeForm/>
+            </div>
+        )}
+    </AuthUserContext.Consumer>
 );
 
-export default AccountPage;
+//This condition needs to be meet in order for this route to be shown.
+const condition = authUser => !!authUser;
+
+export default withAuthorization(condition)(AccountPage);

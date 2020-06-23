@@ -1,5 +1,6 @@
 import app from 'firebase/app'
 import 'firebase/auth';
+import 'firebase/database';
 
 const prodConfig = {
     apiKey: process.env.REACT_APP_API_KEY,
@@ -28,10 +29,15 @@ class Firebase {
     constructor() {
         app.initializeApp(config);
 
+        //We imported auth from firebase above which allows us to use this.auth.firebase (below) elsewhere in the application
         this.auth = app.auth();
+
+        //We import database from firebase above which allows us to access the firebase database (below) elsewhere in the applicaiton
+        this.db = app.database();
     }
 
 //    AUTH API //
+//    These methods allow us to authenticate the user and change their password as required.
     doCreateUserWithEmailAndPassword = (email, password) =>
         this.auth.createUserWithEmailAndPassword(email, password);
 
@@ -43,6 +49,13 @@ class Firebase {
     doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
 
     doPasswordUpdate = password => this.auth.currentUser.updatePassword(password);
+
+//    User API //
+//    These methods allow us to access collections or paths in the firebase database.
+
+    user = uid => this.db.ref('users/${uid}');
+
+    users = () => this.db.ref('users');
 }
 
 
