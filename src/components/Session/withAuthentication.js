@@ -11,16 +11,22 @@ const withAuthentication = Component => {
             super(props);
 
             this.state = {
-                authUser: null
+                authUser: JSON.parse(localStorage.getItem('authUser')),
             };
+
+        //    NOTE. IF THERE IS NO AUTHUSER IN THE LOCAL STORAGE, THIS WILL REVERT TO NULL.
+        //    THIS MEANS THAT THE USER CAN REFREASH THE BROWSER AND THAT ANNOYING FLICKER WILL BE GONE.
+        //    AND THAT THEY CAN LEAVE THE SITE AND RETURN AND STILL BE LOGGED IN
         }
 
         componentDidMount() {
             this.listener = this.props.firebase.onAuthUserListener(
                 authUser => {
+                    localStorage.setItem('authUser', JSON.stringify(authUser));
                     this.setState({authUser});
                 },
                 () => {
+                    localStorage.removeItem('authUser');
                     this.setState({authUser:null});
                 },
             );
