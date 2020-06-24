@@ -50,7 +50,38 @@ class Firebase {
 
     doPasswordUpdate = password => this.auth.currentUser.updatePassword(password);
 
-//    User API //
+//    MERGE AUTH AND DB USER API //
+//    This is an extraction of the functionality we implemented in withAuthorization and withAuthentication
+
+    onAuthUserListener = (next, fallback) =>
+        this.auth.onAuthStateChanged(authUser => {
+            if(authUser) {
+                this.user(authUser.uid)
+                    .once('value')
+                    .then(snapshot => {
+                        const dbUser = snapshot.val();
+
+                    //    default empty roles
+                        if(!dbUser.roles) {
+                            dbUser.roles= {};
+                        }
+
+                    //    merge auth and db user
+                        authUser = {
+                            uid: authUser.uid,
+                            email:authUser.email,
+                            ...dbUser,
+                        };
+
+                        next(authUser);
+                    });
+            } else {
+                fallback();
+            }
+        });
+
+
+//    USER API //
 //    These methods allow us to access collections or paths in the firebase database.
 
     user = uid => this.db.ref(`users/${uid}`);

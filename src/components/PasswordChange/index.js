@@ -49,7 +49,7 @@ class PasswordChangeForm extends Component{
                 <input
                 name="passwordTwo"
                 value={passwordTwo}
-                onchange={this.onChange}
+                onChange={this.onChange}
                 type="password"
                 placeholder="Confirm New Password"
                 />
