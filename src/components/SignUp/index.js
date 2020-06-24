@@ -56,10 +56,16 @@ class SignUpFormBase extends Component {
                     });
             })
             .then(() => {
+                return this.props.firebase.doSendEmailVerification()
+            })
+            .then(() => {
                 this.setState({ ...INITIAL_STATE});
                 this.props.history.push(ROUTES.HOME);
             })
             .catch(error => {
+                if(error.code === ERROR_CODE_ACCOUNT_EXISTS) {
+                    error.message = ERROR_MSG_ACCOUNT_EXISTS;
+                }
                 this.setState({error})
             });
         event.preventDefault();
@@ -147,6 +153,10 @@ const SignUpLink = () => (
         Don't have an account? <Link to={ROUTES.SIGN_UP} >Sign Up</Link>
     </p>
 )
+
+const ERROR_CODE_ACCOUNT_EXISTS = 'auth/email-already-in-use';
+
+const ERROR_MSG_ACCOUNT_EXISTS = 'An accunt with this email already exists. Try to login with this account instead. If you think the account is already used from one of the social logins, try to sign-in with one of them. Afterward, associate your accounts on your personal account page.'
 
 const SignUpForm = compose( withRouter, withFirebase)(SignUpFormBase);
 
