@@ -36,6 +36,15 @@ class SignUpFormBase extends Component {
         this.props.firebase
             .doCreateUserWithEmailAndPassword(email, passwordOne)
             .then (authUser => {
+                //Create a user in your Firebase realtime database at the same place where we are signing a user up.
+                return this.props.firebase
+                    .user(authUser.user.uid)
+                    .set({
+                        username,
+                        email,
+                    });
+            })
+            .then(() => {
                 this.setState({ ...INITIAL_STATE});
                 this.props.history.push(ROUTES.HOME);
             })
@@ -44,6 +53,10 @@ class SignUpFormBase extends Component {
             });
         event.preventDefault();
     };
+
+    //NOTE. THIS SNIPPET OF CODE TRIES TO DO TWO THINGS - 1. CREATE A USER IN FIREBASE"S INTERNAL AUTHENTICATION DATABASE
+    //WHICH IS SECURE AND ENCRYPTED AND PROVIDES LIMITED ACCESS
+    //2. IF 1. IS SUCCESSFUL, IT CREATES A USER IN FIREBASE'S REALTIME DATABASE THAT IS ACCESSIBLE FOR FURTHER USE.
 
     //NOTE. THIS SETS THE STATE BASED ON THE USER'S INPUT
     onChange = event => {

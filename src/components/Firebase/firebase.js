@@ -53,7 +53,7 @@ class Firebase {
 //    User API //
 //    These methods allow us to access collections or paths in the firebase database.
 
-    user = uid => this.db.ref('users/${uid}');
+    user = uid => this.db.ref(`users/${uid}`);
 
     users = () => this.db.ref('users');
 }
