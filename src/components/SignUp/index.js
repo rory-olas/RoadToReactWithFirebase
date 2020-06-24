@@ -5,6 +5,7 @@ import { compose} from "recompose";
 
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
+import * as ROLES from '../../constants/roles';
 
 const SignUpPage = () => (
     <div>
@@ -18,6 +19,8 @@ const INITIAL_STATE = {
     email: '',
     passwordOne: '',
     passwordTwo: '',
+    //Adding Roles to signUp so that we can track authorization based on roles.
+    isAdmin: false,
     error: null,
 };
 
@@ -31,7 +34,14 @@ class SignUpFormBase extends Component {
 
     //NOTE. THIS USES THE FIREBASE AUTH FUNCTIONALITY TO CREATE A USER
     onSubmit = event => {
-        const { username, email, passwordOne } = this.state;
+        const { username, email, passwordOne, isAdmin } = this.state;
+
+        //NOTE. ADDING A CONSTANT ROLES WHICH WILL HOUSE THE ROLES FOR AUTHORIZATION
+        const roles = {};
+
+        if(isAdmin) {
+            roles[ROLES.ADMIN] = ROLES.ADMIN;
+        }
 
         this.props.firebase
             .doCreateUserWithEmailAndPassword(email, passwordOne)
@@ -42,6 +52,7 @@ class SignUpFormBase extends Component {
                     .set({
                         username,
                         email,
+                        roles,
                     });
             })
             .then(() => {
@@ -63,6 +74,10 @@ class SignUpFormBase extends Component {
         this.setState({[event.target.name]: event.target.value});
     };
 
+    onChangeCheckbox = event => {
+        this.setState({ [event.target.name] : event.target.checked});
+    };
+
     render() {
 
         //NOTE. THIS CONST HOLDS THE LOCAL STATE
@@ -71,6 +86,7 @@ class SignUpFormBase extends Component {
             email,
             passwordOne,
             passwordTwo,
+            isAdmin,
             error
         } = this.state;
 
@@ -107,6 +123,16 @@ class SignUpFormBase extends Component {
                     onChange={this.onChange}
                     type="password"
                     placeholder={'Confirm Password'}/>
+                    <label>
+                        Admin:
+                        <input
+                        name="isAdmin"
+                        type="checkbox"
+                        checked={isAdmin}
+                        onChange={this.onChangeCheckbox}
+                        />
+                    </label>
+
                     <button disabled={isInvalid} type={'submit'}>
                         Sign Up
                     </button>
