@@ -26,15 +26,27 @@ class MessageBase extends Component{
             text: '',
             loading: false,
             messages: [],
+            limit: 5,
         };
     }
 
     componentDidMount() {
+        //Moving all the functionality that was previously in componentDidMount to be outside the lifecycle method.
+        this.onListenForMessages();
+    }
+
+    onListenForMessages() {
         this.setState({loading:true});
 
         //WHEN MESSAGES CHANGE (CREATE, UPDATE, REMOVE), THE CALLBACK FUNCTION IN THE LISTENER IS TRIGGERED
         // AND FIREBASE PROVIDES A SNAPSHOT OF THE DATA
-        this.props.firebase.messages().on('value', snapshot => {
+        this.props.firebase
+            .messages()
+            //ADDING IN ORDERBYCHILD IN ORDER TO SORT/ORDER THE MESSAGES.
+            .orderByChild('createdAt')
+            //ADDING PAGINATION - SIMPLY PASS FIREBASE A LIMIT
+            .limitToLast(this.state.limit)
+            .on('value', snapshot => {
 
         //    ADDING FEATURE TO TURN MESSAGES FROM AND EMPTY ARRAY IN STATE TO NULL IF THERE ARE NO MESSAGES.
         //    WE'LL THEN RENDER THE LIST CONDITIONALLY BELOW.
@@ -47,7 +59,9 @@ class MessageBase extends Component{
                 const messageList = Object.keys(messageObject).map( key => ({
                     ...messageObject[key],
                     uid: key,
-                }));
+                }))
+                    //THIS REVERSES THE ARRAY THAT WAS CREATED ABOVE.
+                    .reverse();
 
                 this.setState({
                     messages: messageList,
@@ -56,11 +70,17 @@ class MessageBase extends Component{
             } else {
                 this.setState({messages: null, loading: false})
             }
-
-
             // this.setState({loading:false})
         });
     }
+
+    //ADDING PAGINATION FUNCTIONALITY
+    onNextPage = () => {
+        this.setState(
+            state => ({limit: state.limit + 5}),
+            this.onListenForMessages,
+        );
+    };
 
     componentWillUnmount() {
         //DISMOUNT THE MESSAGES LISTENER TO AVOID MEMORY LEAKS
@@ -112,11 +132,18 @@ class MessageBase extends Component{
             <AuthUserContext.Consumer>
                 {authUser => (
             <div>
+                {!loading && messages && (
+                    <button type="button" onClick={this.onNextPage}>
+                        More
+                    </button>
+                )}
+
             {loading && <div>Loading...</div>}
 
             {/*ADDING CONDITIONAL RENDERING TO SHOW THE USER SOMETHING IF THERE ARE NO MESSAGES*/}
                 {messages ? (
                     <MessageList
+                        authUser ={authUser}
                         messages={messages}
                         onRemoveMessage={this.onRemoveMessage}
                         onEditMessage={this.onEditMessage}
@@ -145,10 +172,12 @@ class MessageBase extends Component{
 //THE MESSAGE ITEM WILL DISPLAY THE ACTUAL MESSAGE
 
 
-const MessageList = ({messages, onRemoveMessage, onEditMessage}) => (
+const MessageList = ({authUser, messages, onRemoveMessage, onEditMessage}) => (
     <ul>
         {messages.map(message => (
-            <MessageItem key={message.id}
+            <MessageItem
+                         key={message.id}
+                         authUser={authUser}
                          message={message}
                          onRemoveMessage={onRemoveMessage}
                          onEditMessage={onEditMessage}
@@ -192,7 +221,7 @@ class MessageItem extends Component {
 
 
     render() {
-        const {message, onRemoveMessage} = this.props;
+        const {authUser, message, onRemoveMessage} = this.props;
         const {editMode, editText} = this.state;
 
         return (
@@ -210,7 +239,8 @@ class MessageItem extends Component {
             </span>
                 )}
 
-
+                {authUser.uid === message.userId && (
+                    <span>
                 {editMode ? (
                     <span>
                     <button onClick={this.onSaveEditText}>Save</button>
@@ -227,6 +257,8 @@ class MessageItem extends Component {
                     >
                         Delete
                     </button>
+                )}
+                </span>
                 )}
             </li>
         )
