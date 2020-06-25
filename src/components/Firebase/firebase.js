@@ -31,6 +31,10 @@ class Firebase {
     constructor() {
         app.initializeApp(config);
 
+        // HELPER //
+        //This can be used to get the TIMESTAMP of an action.
+        this.serverValue = app.database.ServerValue;
+
         //We imported auth from firebase above which allows us to use this.auth.firebase (below) elsewhere in the application
         this.auth = app.auth();
 
