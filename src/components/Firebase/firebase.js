@@ -117,6 +117,18 @@ class Firebase {
     user = uid => this.db.ref(`users/${uid}`);
 
     users = () => this.db.ref('users');
+
+//    MESSAGE API //
+//    These methods allow us to create a messaging application
+
+    message = uid => this.db.ref(`messages/${uid}`);
+
+    messages = () => this.db.ref(`messages`);
+
+//    MESSAGES ARE READABLE AND WRITEABLE ON TWO API ENDPOINTS: MESSAGES AND MESSAGES/:MESSAGEID
+//    YOU WILL RETRIEVE A LIST OF MESSAGES AND CREATE A MESSAGE WITH THE MESSAGES REFERENCES (general and addon),
+//    BUT YOU WILL EDIT AND REMOVE MESSAGES WITH THE MESSAGES/:MESSAGEID REFERENCE (specific - edit and remove).
+
 }
 
 
